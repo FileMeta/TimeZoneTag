@@ -22,10 +22,14 @@ namespace FileMeta
             new TestCase("-5", "-05:00", TimeZoneKind.Normal, -5*60),
             new TestCase("+4:00", "+04:00", TimeZoneKind.Normal, 4*60),
             new TestCase("-9:00", "-09:00", TimeZoneKind.Normal, -9*60),
-            new TestCase("+23:30", "+23:30", TimeZoneKind.Normal, 23*60+30),
-            new TestCase("-22:15", "-22:15", TimeZoneKind.Normal, -22*60-15),
-            new TestCase("+23:59", "+23:59", TimeZoneKind.Normal, 23*60+59),
-            new TestCase("-23:59", "-23:59", TimeZoneKind.Normal, -23*60-59)
+            new TestCase("+13:30", "+13:30", TimeZoneKind.Normal, 13*60+30),
+            new TestCase("-13:15", "-13:15", TimeZoneKind.Normal, -13*60-15),
+            new TestCase("+13:59", "+13:59", TimeZoneKind.Normal, 13*60+59),
+            new TestCase("-13:59", "-13:59", TimeZoneKind.Normal, -13*60-59),
+            new TestCase("+14:00", "+14:00", TimeZoneKind.Normal, 14*60),
+            new TestCase("-14:00", "-14:00", TimeZoneKind.Normal, -14*60),
+            new TestCase("+14", "+14:00", TimeZoneKind.Normal, 14*60),
+            new TestCase("-14", "-14:00", TimeZoneKind.Normal, -14*60)
         };
 
         // Parse failure test cases
@@ -34,8 +38,10 @@ namespace FileMeta
             string.Empty,
             "1",
             "10",
-            "+24",
-            "-24",
+            "+15",
+            "-15",
+            "+14:01",
+            "-14:01",
             "+0:60",
             "+100",
             "-4:60",
@@ -49,7 +55,6 @@ namespace FileMeta
         {
             try
             {
-
                 foreach (var testCase in s_testCases)
                 {
                     Console.WriteLine(testCase.ToString());
@@ -230,6 +235,7 @@ namespace FileMeta
 
             DateTime dtLocal = new DateTime(1968, 7, 23, 8, 24, 46, 22, DateTimeKind.Local);
             DateTime dtUtc = new DateTime(dtLocal.Ticks - (utcOffset * c_ticksPerMinute), DateTimeKind.Utc);
+            DateTimeOffset dto = new DateTimeOffset(dtLocal.Ticks, TimeSpan.FromMinutes(utcOffset));
 
             if (!tag.ToLocal(dtUtc).Equals(dtLocal))
             {
@@ -259,6 +265,16 @@ namespace FileMeta
             if (!tag.ToUtc(DateTime.SpecifyKind(dtLocal, DateTimeKind.Unspecified)).Equals(dtUtc))
             {
                 throw new ApplicationException("Failed ToUtc Unspecified test");
+            }
+
+            if (!tag.ToDateTimeOffset(dtUtc).Equals(dto))
+            {
+                throw new ApplicationException("Failed ToDateTimeOffset UTC test");
+            }
+
+            if (!tag.ToDateTimeOffset(dtLocal).Equals(dto))
+            {
+                throw new ApplicationException("Failed ToDateTimeOffset Local test");
             }
         }
 
